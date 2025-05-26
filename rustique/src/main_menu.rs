@@ -2,6 +2,7 @@ use eframe::egui;
 use egui::{Color32, Vec2, RichText, Pos2, Rect, Stroke, TextureHandle, TextureOptions};
 use crate::localization::{Language, get_text};
 use crate::ui_theme::RustiqueTheme;
+use crate::assets::Assets;
 
 pub enum MenuAction {
     NewCanvas(u32, u32),
@@ -750,17 +751,7 @@ impl MainMenu {
     }
     
     fn load_background(&self, ctx: &egui::Context) -> Option<TextureHandle> {
-        if let Ok(image) = image::open("background.png") {
-            let image_buffer = image.to_rgba8();
-            let size = [image_buffer.width() as _, image_buffer.height() as _];
-            let image_data = egui::ColorImage::from_rgba_unmultiplied(
-                size, 
-                image_buffer.as_flat_samples().as_slice()
-            );
-            Some(ctx.load_texture("background", image_data, TextureOptions::LINEAR))
-        } else {
-            None
-        }
+        Assets::load_texture(ctx, "background.png", "background")
     }
     
     fn draw_background(&self, ui: &mut egui::Ui, rect: Rect) {
@@ -1071,17 +1062,6 @@ impl MainMenu {
     }
     
     fn load_logo(&self, ctx: &egui::Context) -> Option<egui::TextureHandle> {
-        match image::open("rustique.png") {
-            Ok(image) => {
-                let image_buffer = image.to_rgba8();
-                let size = [image_buffer.width() as _, image_buffer.height() as _];
-                let image_data = egui::ColorImage::from_rgba_unmultiplied(
-                    size, 
-                    image_buffer.as_flat_samples().as_slice()
-                );
-                Some(ctx.load_texture("logo", image_data, TextureOptions::LINEAR))
-            },
-            Err(_) => None
-        }
+        Assets::load_texture(ctx, "rustique.png", "logo")
     }
 }

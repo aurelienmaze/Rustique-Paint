@@ -1,6 +1,7 @@
 use egui::{Color32, RichText, TextureHandle, Vec2, Rect, Pos2, Ui, Response, Sense, Widget};
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
+use crate::assets::Assets;
 
 lazy_static::lazy_static! {
     static ref ICON_CACHE: Arc<Mutex<HashMap<String, Option<TextureHandle>>>> = 
@@ -36,26 +37,9 @@ impl IconWidget {
             return cached.clone();
         }
 
-        let icon_path = format!("images/{}.png", self.icon_name);
+        let filename = format!("{}.png", self.icon_name);
         
-        let texture = match image::open(&icon_path) {
-            Ok(img) => {
-                let img_rgba = img.to_rgba8();
-                let (width, height) = (img_rgba.width(), img_rgba.height());
-                
-                let color_image = egui::ColorImage::from_rgba_unmultiplied(
-                    [width as usize, height as usize],
-                    img_rgba.as_flat_samples().as_slice()
-                );
-                
-                Some(ctx.load_texture(
-                    &self.icon_name,
-                    color_image,
-                    egui::TextureOptions::LINEAR
-                ))
-            },
-            Err(_) => None,
-        };
+        let texture = Assets::load_texture(ctx, &filename, &self.icon_name);
 
         cache.insert(self.icon_name.clone(), texture.clone());
         texture

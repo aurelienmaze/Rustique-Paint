@@ -3,6 +3,7 @@ mod localization;
 mod brush_system;
 mod ui_theme;
 mod ui_icons;
+mod assets;
 
 use eframe::egui;
 use egui::{Color32, TextureHandle, TextureOptions, Rect, Pos2, Vec2, Stroke, RichText};
@@ -18,6 +19,7 @@ use serde::{Serialize, Deserialize};
 use main_menu::MainMenu;
 use localization::{Language, get_text};
 use brush_system::BrushManager;
+use assets::Assets;
 use ui_theme::RustiqueTheme;
 use ui_icons::ToolIcons;
 
@@ -2312,9 +2314,7 @@ impl eframe::App for MyApp {
 }
 
 fn load_app_icon() -> Option<eframe::IconData> {
-    let icon_path = "rustique_icon.png";
-    
-    if let Ok(icon_bytes) = std::fs::read(icon_path) {
+    if let Some(icon_bytes) = Assets::get_image_bytes("rustique_icon.png") {
         if let Ok(icon_image) = image::load_from_memory(&icon_bytes) {
             let icon_rgba = icon_image.to_rgba8();
             let (width, height) = (icon_rgba.width(), icon_rgba.height());

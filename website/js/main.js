@@ -90,17 +90,38 @@ const mobileMenu = (() => {
  * Theme Switcher
  */
 const themeSwitcher = (() => {
+    const updateLogos = (isDarkMode) => {
+        const logoPath = isDarkMode ? 'src/rustique_logo_light.png' : 'src/rustique_logo_dark.png';
+        
+        // Update all logos
+        const logos = [
+            document.getElementById('logo-loader'),
+            document.getElementById('header-logo'),
+            document.getElementById('footer-logo')
+        ];
+        
+        logos.forEach(logo => {
+            if (logo) {
+                logo.src = logoPath;
+            }
+        });
+    };
+    
     const toggleTheme = () => {
         const isDarkMode = themeToggle.checked;
         document.documentElement.setAttribute('data-theme', isDarkMode ? 'dark' : 'light');
         localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+        updateLogos(isDarkMode);
     };
     
     const init = () => {
         // Set theme from local storage or default to dark
         const savedTheme = localStorage.getItem('theme') || 'dark';
+        const isDarkMode = savedTheme === 'dark';
+        
         document.documentElement.setAttribute('data-theme', savedTheme);
-        themeToggle.checked = savedTheme === 'dark';
+        themeToggle.checked = isDarkMode;
+        updateLogos(isDarkMode);
         
         // Listen for theme changes
         themeToggle.addEventListener('change', toggleTheme);
@@ -227,7 +248,7 @@ const animations = (() => {
         AOS.init({
             duration: 800,
             easing: 'ease-in-out',
-            once: false,  // Changé à false pour permettre de répéter les animations
+            once: true,  // Changé à true pour éviter les conflits
             mirror: false,
             disable: 'mobile'
         });
@@ -237,16 +258,33 @@ const animations = (() => {
         // Register GSAP plugins
         gsap.registerPlugin(ScrollTrigger);
         
-        // Timeline animations with delay pour résoudre le problème de visibilité
-        gsap.from('.timeline-item', {
-            opacity: 0,
-            y: 50,
+        // Timeline animations avec gestion améliorée
+        const timelineItems = document.querySelectorAll('.timeline-item');
+        
+        // Ajouter la classe d'animation initiale
+        timelineItems.forEach(item => {
+            item.classList.add('animate-in');
+        });
+        
+        // Animation GSAP pour la timeline
+        gsap.to('.timeline-item', {
+            opacity: 1,
+            y: 0,
             stagger: 0.2,
             duration: 1,
             ease: 'power3.out',
             scrollTrigger: {
                 trigger: '.timeline',
-                start: 'top 70%'
+                start: 'top 70%',
+                end: 'bottom 30%',
+                toggleActions: 'play none none reverse',
+                onStart: () => {
+                    // Retirer les attributs AOS des éléments timeline pour éviter les conflits
+                    timelineItems.forEach(item => {
+                        item.removeAttribute('data-aos');
+                        item.removeAttribute('data-aos-delay');
+                    });
+                }
             }
         });
         
@@ -266,7 +304,10 @@ const animations = (() => {
     
     const init = () => {
         initAOS();
-        initGSAP();
+        // Délai pour s'assurer que AOS est initialisé avant GSAP
+        setTimeout(() => {
+            initGSAP();
+        }, 100);
     };
     
     return {
